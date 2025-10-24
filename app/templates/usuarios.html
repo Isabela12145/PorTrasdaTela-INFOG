@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Usuários - DesconectaMente</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"/>
+
+  <!-- Animate.css -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+  <style>
+    /* 🌈 Fundo animado */
+    body {
+      font-family: 'Fredoka', sans-serif;
+      background: linear-gradient(270deg, #fceabb, #ffc8dd, #cdb4db, #a2d2ff, #bde0fe, #94ffe4);
+      background-size: 1000% 1000%;
+      animation: fundoAnimado 20s ease infinite;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+    }
+
+    @keyframes fundoAnimado {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: #ffb3c1;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .nav-link {
+      color: #333 !important;
+      font-weight: 500;
+      font-size: 1.1rem;
+    }
+
+    .nav-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Jumbotron */
+    .jumbotron {
+      background: rgba(255, 255, 255, 0.85);
+      border-radius: 20px;
+      padding: 50px 30px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      margin-top: 30px;
+      animation: fadeInDown 1s ease;
+    }
+
+    .jumbotron h1 {
+      font-size: 2.5rem;
+      font-weight: 600;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes fadeInDown {
+      from { transform: translateY(-30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg">
+    <a class="navbar-brand font-weight-bold" href="/">🌟 DesconectaMente</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item"><a class="nav-link" href="/">🏠 Início</a></li>
+        <li class="nav-item active"><a class="nav-link" href="/usuarios/">👨‍👩‍👧 Usuários</a></li>
+        <li class="nav-item"><a class="nav-link" href="/criancas/">🧒 Crianças</a></li>
+        <li class="nav-item"><a class="nav-link" href="/registros-tempo-tela/">⏱️ Registros</a></li>
+        <li class="nav-item"><a class="nav-link" href="/desafios-offline/">🧩 Desafios</a></li>
+        <li class="nav-item"><a class="nav-link" href="/recompensas/">🏅 Recompensas</a></li>
+        <li class="nav-item"><a class="nav-link" href="/conteudos-educativos/">📚 Conteúdos</a></li>
+        <li class="nav-item"><a class="nav-link" href="/feedback/">💬 Feedback</a></li>
+        <li class="nav-item"><a class="nav-link" href="/admin/">⚙️ Admin</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Jumbotron -->
+  <div class="container">
+    <div class="jumbotron animate__animated animate__fadeInDown">
+      <h1>👨‍👩‍👧 Usuários</h1>
+      <p class="lead">Gerencie os responsáveis cadastrados no sistema.</p>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
