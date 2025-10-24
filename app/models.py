@@ -1,12 +1,21 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 
-class Usuario(models.Model):
+class Usuario(AbstractUser):
     nome = models.CharField(max_length=100, verbose_name="Nome do responsável")
-    email = models.EmailField(max_length=100, verbose_name="Email")
+    email = models.EmailField(max_length=100, unique=True, verbose_name="Email")  # Adicionei unique=True
     cpf = models.CharField(max_length=11, unique=True, verbose_name="CPF")
     telefone = models.CharField(max_length=15, verbose_name="Telefone")
     data_nasc = models.DateField(verbose_name="Data de nascimento")
-    senha = models.CharField(max_length=100, verbose_name="Senha")  # Armazenar com hash (recomendo usar User model do Django)
+    
+    # Removendo campos não necessários do AbstractUser
+    username = None
+    first_name = None
+    last_name = None
+    
+    # Usando email como campo de login único
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['nome', 'cpf']
 
     def __str__(self):
         return self.nome
@@ -141,3 +150,66 @@ class Feedback(models.Model):
     class Meta:
         verbose_name = "Feedback"
         verbose_name_plural = "Feedbacks"
+
+
+class Ponto(models.Model):
+    crianca = models.ForeignKey(Crianca, on_delete=models.CASCADE, verbose_name="Criança")
+    pontos = models.IntegerField(default=0, verbose_name="Pontos acumulados")
+    data_atualizacao = models.DateTimeField(auto_now=True, verbose_name="Data de atualização")
+
+    def __str__(self):
+        return f"Pontos de {self.crianca.nome}: {self.pontos}"
+
+    class Meta:
+        verbose_name = "Ponto"
+        verbose_name_plural = "Pontos"
+
+
+class Ranking(models.Model):
+    crianca = models.ForeignKey(Crianca, on_delete=models.CASCADE, verbose_name="Criança")
+    posicao = models.IntegerField(verbose_name="Posição no ranking")
+    pontuacao_total = models.IntegerField(verbose_name="Pontuação total")
+    data_atualizacao = models.DateTimeField(auto_now=True, verbose_name="Data de atualização")
+
+    def __str__(self):
+        return f"{self.crianca.nome} - Posição {self.posicao}"
+
+    class Meta:
+        verbose_name = "Ranking"
+        verbose_name_plural = "Rankings"
+
+
+class Diario(models.Model):
+    crianca = models.ForeignKey(Crianca, on_delete=models.CASCADE, verbose_name="Criança")
+    data = models.DateField(verbose_name="Data do registro")
+    atividade_realizada = models.TextField(verbose_name="Atividade realizada")
+    tempo_tela_utilizado = models.IntegerField(verbose_name="Tempo de tela utilizado (minutos)")
+    reflexao = models.TextField(blank=True, verbose_name="Reflexão do dia")
+
+    def __str__(self):
+        return f"Diário de {self.crianca.nome} - {self.data}"
+
+    class Meta:
+        verbose_name = "Diário"
+        verbose_name_plural = "Diários"
+
+
+class Alerta(models.Model):
+    TIPOS_ALERTA = [
+        ('limite_excedido', 'Limite de Tela Excedido'),
+        ('desafio_disponivel', 'Desafio Disponível'),
+        ('recompensa_disponivel', 'Recompensa Disponível'),
+    ]
+    
+    crianca = models.ForeignKey(Crianca, on_delete=models.CASCADE, verbose_name="Criança")
+    tipo = models.CharField(max_length=50, choices=TIPOS_ALERTA, verbose_name="Tipo de alerta")
+    mensagem = models.TextField(verbose_name="Mensagem do alerta")
+    data_criacao = models.DateTimeField(auto_now_add=True, verbose_name="Data de criação")
+    lido = models.BooleanField(default=False, verbose_name="Lido")
+
+    def __str__(self):
+        return f"Alerta para {self.crianca.nome} - {self.tipo}"
+
+    class Meta:
+        verbose_name = "Alerta"
+        verbose_name_plural = "Alertas"
