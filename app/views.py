@@ -1,28 +1,49 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import *
-from django.views import View
-from django.contrib import messages
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 
-def home(request):
-    return render(request, 'home.html')
+def index(request):
+    return render(request, "index.html")
 
-def usuarios(request):
-    return render(request, 'usuarios.html')
+def login_page(request):
+    return render(request, "login.html")
 
-def criancas(request):
-    return render(request, 'criancas.html')
+def login_user(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+        senha = request.POST.get("senha")
 
-def registros_tempo_tela(request):
-    return render(request, 'registros-tempo-tela.html')
+        user = authenticate(request, username=email, password=senha)
 
-def desafios_offline(request):
-    return render(request, 'desafios-offline.html')
+        if user:
+            login(request, user)
+            return redirect("index")
+        else:
+            return render(request, "login.html", {"erro": "Login inválido!"})
 
-def recompensas(request):
-    return render(request, 'recompensas.html')
+def logout_user(request):
+    logout(request)
+    return redirect("login")
 
-def conteudos_educativos(request):
-    return render(request, 'conteudos-educativos.html')
 
-def feedback(request):
-    return render(request, 'feedback.html')
+# ---- PÁGINAS INTERNAS ---- #
+
+@login_required(login_url="login")
+def alerta(request):
+    return render(request, "alerta.html")
+
+@login_required(login_url="login")
+def diario(request):
+    return render(request, "diario.html")
+
+@login_required(login_url="login")
+def ranking(request):
+    return render(request, "ranking.html")
+
+@login_required(login_url="login")
+def recompensa(request):
+    return render(request, "recompensa.html")
+
+@login_required(login_url="login")
+def profissionais(request):
+    return render(request, "profissional.html")

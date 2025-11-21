@@ -1,16 +1,19 @@
 from django.contrib import admin
-from django.urls import path, include
-from django.views.generic import TemplateView
-from app.views import *
+from django.urls import path
+from app import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', TemplateView.as_view(template_name='index.html'), name='home'),
-    path('usuarios/', TemplateView.as_view(template_name='usuarios.html'), name='usuarios'),
-    path('criancas/', TemplateView.as_view(template_name='criancas.html'), name='criancas'),
-    path('registros-tempo-tela/', TemplateView.as_view(template_name='registros-tempo-tela.html'), name='registros-tempo-tela'),
-    path('desafios-offline/', TemplateView.as_view(template_name='desafios-offline.html'), name='desafios-offline'),
-    path('recompensas/', TemplateView.as_view(template_name='recompensas.html'), name='recompensas'),
-    path('conteudos-educativos/', TemplateView.as_view(template_name='conteudos-educativos.html'), name='conteudos-educativos'),
-    path('feedback/', TemplateView.as_view(template_name='feedback.html'), name='feedback'),
+
+    path('', views.index, name="index"),
+    path('login/', views.login_page, name="login"),
+    path('login_user/', views.login_user, name="login_user"),
+    path('logout/', views.logout_user, name="logout"),
+
+    # páginas internas
+    path('alerta/', views.alerta, name="alerta"),
+    path('diario/', views.diario, name="diario"),
+    path('ranking/', views.ranking, name="ranking"),
+    path('recompensa/', views.recompensa, name="recompensa"),
+    path('profissionais/', views.profissionais, name="profissionais"),
 ]
