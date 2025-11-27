@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Painel de Autoavaliação</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f4f7fb;
+        padding: 20px;
+    }
+
+    .container {
+        max-width: 700px;
+        margin: auto;
+        background: #fff;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 0 12px rgba(0,0,0,0.1);
+    }
+
+    h2, h3 {
+        color: #333;
+    }
+
+    label {
+        font-weight: bold;
+        margin-top: 14px;
+        display: block;
+    }
+
+    select, textarea, input[type="number"] {
+        width: 100%;
+        padding: 10px;
+        margin-top: 6px;
+        border-radius: 8px;
+        border: 1px solid #aaa;
+    }
+
+    button {
+        margin-top: 20px;
+        padding: 12px;
+        background: #4c6ef5;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        width: 100%;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background: #3b5bdb;
+    }
+
+    #resultado {
+        margin-top: 25px;
+        padding: 18px;
+        background: #eaf4ff;
+        border-radius: 10px;
+        display: none;
+        white-space: pre-line;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Painel de Autoavaliação</h2>
+    <p><strong>Tema:</strong> O impacto das redes sociais na saúde mental e física dos jovens</p>
+
+    <label>1. Como você tem se sentido ultimamente?</label>
+    <select id="emocional">
+        <option value="Bem">Bem</option>
+        <option value="Ansioso(a)">Ansioso(a)</option>
+        <option value="Estressado(a)">Estressado(a)</option>
+        <option value="Cansado(a)">Cansado(a)</option>
+        <option value="Triste">Triste</option>
+    </select>
+
+    <label>2. Quanto tempo você tem passado nas redes sociais por dia? (em horas)</label>
+    <input type="number" id="tempo" min="0" placeholder="Ex.: 3">
+
+    <label>3. Quais atividades físicas ou de lazer você realizou nesta semana?</label>
+    <textarea id="atividades" rows="3" placeholder="Ex.: caminhada, academia, leitura, conversar com amigos..."></textarea>
+
+    <label>4. Como você avalia sua evolução nesta semana?</label>
+    <select id="evolucao">
+        <option value="Melhorando">Melhorando</option>
+        <option value="Estável">Estável</option>
+        <option value="Piorando">Piorando</option>
+    </select>
+
+    <button onclick="gerarRelatorio()">Gerar Autoavaliação</button>
+
+    <div id="resultado"></div>
+</div>
+
+<script>
+function gerarRelatorio() {
+    let emocional = document.getElementById("emocional").value;
+    let tempo = document.getElementById("tempo").value;
+    let atividades = document.getElementById("atividades").value;
+    let evolucao = document.getElementById("evolucao").value;
+
+    let mensagem = "📋 RELATÓRIO DE AUTOAVALIAÇÃO\n\n";
+    mensagem += `• Estado emocional atual: ${emocional}\n`;
+    mensagem += `• Tempo médio nas redes sociais por dia: ${tempo} hora(s)\n\n`;
+    mensagem += `• Atividades realizadas nesta semana:\n${atividades}\n\n`;
+    mensagem += `• Avaliação da própria evolução: ${evolucao}\n\n`;
+
+    // análise automática simples
+    if (tempo > 5) {
+        mensagem += "⚠ Você está passando muito tempo nas redes sociais. Considere reduzir o uso para evitar impactos na saúde mental e física.\n";
+    } else if (tempo <= 2) {
+        mensagem += "👍 Ótimo! Seu uso de redes sociais está equilibrado.\n";
+    }
+
+    if (emocional === "Ansioso(a)" || emocional === "Triste") {
+        mensagem += "💬 Sugestão: tente incluir mais pausas, atividades relaxantes ou momentos offline no seu dia.\n";
+    }
+
+    document.getElementById("resultado").innerText = mensagem;
+    document.getElementById("resultado").style.display = "block";
+}
+</script>
+
+</body>
+</html>
