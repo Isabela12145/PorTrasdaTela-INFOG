@@ -10,7 +10,7 @@ from django.core.validators import RegexValidator
 # Usuário
 from django.core.validators import RegexValidator
 
-class Usuario(models.Model):
+class usuarios(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     nome = models.CharField(max_length=100, verbose_name="Nome completo")
@@ -45,27 +45,14 @@ class Usuario(models.Model):
 
 
 
-class Crianca(models.Model):
-    nome = models.CharField(max_length=100, verbose_name="Nome da criança")
-    data_nasc = models.DateField(verbose_name="Data de nascimento")
-    tempo_tela_diario = models.IntegerField(verbose_name="Tempo de tela diário (minutos)")
-    vinculo_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, verbose_name="Responsável")
-
-    def __str__(self):
-        return self.nome
-
-    class Meta:
-        verbose_name = "Criança"
-        verbose_name_plural = "Crianças"
-
 
 class RegistroTempoTela(models.Model):
-    crianca = models.ForeignKey(Crianca, on_delete=models.CASCADE, verbose_name="Criança")
+    usuarios = models.ForeignKey(usuarios, on_delete=models.CASCADE, verbose_name="Usuario")
     data = models.DateField(verbose_name="Data do registro")
     minutos_uso = models.IntegerField(verbose_name="Minutos de uso")
 
     def __str__(self):
-        return f"{self.crianca.nome} - {self.data}"
+        return f"{self.usuarios.nome} - {self.data}"
 
     class Meta:
         verbose_name = "Registro de Tempo de Tela"
@@ -100,12 +87,12 @@ class Recompensa(models.Model):
 
 
 class ConquistaDesafio(models.Model):
-    crianca = models.ForeignKey(Crianca, on_delete=models.CASCADE, verbose_name="Criança")
+    usuarios = models.ForeignKey(usuarios, on_delete=models.CASCADE, verbose_name="Usuario")
     desafio = models.ForeignKey(DesafioOffline, on_delete=models.CASCADE, verbose_name="Desafio")
     data_conclusao = models.DateField(verbose_name="Data da conclusão")
 
     def __str__(self):
-        return f"{self.crianca.nome} - {self.desafio.titulo}"
+        return f"{self.usuario.nome} - {self.desafio.titulo}"
 
     class Meta:
         verbose_name = "Conquista de Desafio"
@@ -124,21 +111,47 @@ class ConteudoEducativo(models.Model):
     arquivo_url = models.URLField(verbose_name="URL do conteúdo")
     descricao = models.TextField(verbose_name="Descrição")
 
+    def save(self, *args, **kwargs):
+        # Se for vídeo do YouTube, extrai o ID e remove parâmetros
+        if self.tipo == "video":
+            url = self.arquivo_url.strip()
+
+            # 1. watch?v=
+            if "watch?v=" in url:
+                video_id = url.split("watch?v=")[-1]
+
+            # 2. youtu.be/
+            elif "youtu.be/" in url:
+                video_id = url.split("youtu.be/")[-1]
+
+            # 3. shorts/
+            elif "shorts/" in url:
+                video_id = url.split("shorts/")[-1]
+
+            else:
+                video_id = url  # fallback
+
+            # Remove parâmetros como '?si=' ou '&ab_channel='
+            if "?" in video_id:
+                video_id = video_id.split("?")[0]
+            if "&" in video_id:
+                video_id = video_id.split("&")[0]
+
+            self.arquivo_url = video_id
+
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.titulo
 
-    class Meta:
-        verbose_name = "Conteúdo Educativo"
-        verbose_name_plural = "Conteúdos Educativos"
-
 
 class RotinaTempoTela(models.Model):
-    crianca = models.ForeignKey(Crianca, on_delete=models.CASCADE, verbose_name="Criança")
+    usuarios = models.ForeignKey(usuarios, on_delete=models.CASCADE, verbose_name="Usuario")
     limite_diario_minutos = models.IntegerField(verbose_name="Limite diário (minutos)")
     atividades_offline_planejadas = models.TextField(verbose_name="Atividades offline planejadas")
 
     def __str__(self):
-        return f"Rotina de {self.crianca.nome}"
+        return f"Rotina de {self.usuarios.nome}"
 
     class Meta:
         verbose_name = "Rotina de Tempo de Tela"
@@ -146,7 +159,7 @@ class RotinaTempoTela(models.Model):
 
 
 class Notificacao(models.Model):
-    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, verbose_name="Usuário")
+    usuario = models.ForeignKey(usuarios, on_delete=models.CASCADE, verbose_name="Usuário")
     mensagem = models.TextField(verbose_name="Mensagem")
     data_envio = models.DateTimeField(auto_now_add=True, verbose_name="Data de envio")
     lida = models.BooleanField(default=False, verbose_name="Lida")
@@ -160,7 +173,7 @@ class Notificacao(models.Model):
 
 
 class Feedback(models.Model):
-    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, verbose_name="Usuário")
+    usuario = models.ForeignKey(usuarios, on_delete=models.CASCADE, verbose_name="Usuário")
     mensagem = models.TextField(verbose_name="Mensagem")
     data_envio = models.DateTimeField(auto_now_add=True, verbose_name="Data de envio")
 
@@ -173,12 +186,12 @@ class Feedback(models.Model):
 
 
 class Ponto(models.Model):
-    crianca = models.ForeignKey(Crianca, on_delete=models.CASCADE, verbose_name="Criança")
+    usuarios = models.ForeignKey(usuarios, on_delete=models.CASCADE, verbose_name="Usuario")
     pontos = models.IntegerField(default=0, verbose_name="Pontos acumulados")
     data_atualizacao = models.DateTimeField(auto_now=True, verbose_name="Data de atualização")
 
     def __str__(self):
-        return f"Pontos de {self.crianca.nome}: {self.pontos}"
+        return f"Pontos de {self.usuarios.nome}: {self.pontos}"
 
     class Meta:
         verbose_name = "Ponto"
@@ -186,13 +199,13 @@ class Ponto(models.Model):
 
 
 class Ranking(models.Model):
-    crianca = models.ForeignKey(Crianca, on_delete=models.CASCADE, verbose_name="Criança")
+    usuarios = models.ForeignKey(usuarios, on_delete=models.CASCADE, verbose_name="Criança")
     posicao = models.IntegerField(verbose_name="Posição no ranking")
     pontuacao_total = models.IntegerField(verbose_name="Pontuação total")
     data_atualizacao = models.DateTimeField(auto_now=True, verbose_name="Data de atualização")
 
     def __str__(self):
-        return f"{self.crianca.nome} - Posição {self.posicao}"
+        return f"{self.usuarios.nome} - Posição {self.posicao}"
 
     class Meta:
         verbose_name = "Ranking"
@@ -200,14 +213,14 @@ class Ranking(models.Model):
 
 
 class Diario(models.Model):
-    crianca = models.ForeignKey(Crianca, on_delete=models.CASCADE, verbose_name="Criança")
+    usuarios = models.ForeignKey(usuarios, on_delete=models.CASCADE, verbose_name="Criança")
     data = models.DateField(verbose_name="Data do registro")
     atividade_realizada = models.TextField(verbose_name="Atividade realizada")
     tempo_tela_utilizado = models.IntegerField(verbose_name="Tempo de tela utilizado (minutos)")
     reflexao = models.TextField(blank=True, verbose_name="Reflexão do dia")
 
     def __str__(self):
-        return f"Diário de {self.crianca.nome} - {self.data}"
+        return f"Diário de {self.usuarios.nome} - {self.data}"
 
     class Meta:
         verbose_name = "Diário"
@@ -221,15 +234,40 @@ class Alerta(models.Model):
         ('recompensa_disponivel', 'Recompensa Disponível'),
     ]
     
-    crianca = models.ForeignKey(Crianca, on_delete=models.CASCADE, verbose_name="Criança")
+    usuarios = models.ForeignKey(usuarios, on_delete=models.CASCADE, verbose_name="Criança")
     tipo = models.CharField(max_length=50, choices=TIPOS_ALERTA, verbose_name="Tipo de alerta")
     mensagem = models.TextField(verbose_name="Mensagem do alerta")
     data_criacao = models.DateTimeField(auto_now_add=True, verbose_name="Data de criação")
     lido = models.BooleanField(default=False, verbose_name="Lido")
 
     def __str__(self):
-        return f"Alerta para {self.crianca.nome} - {self.tipo}"
+        return f"Alerta para {self.usuarios.nome} - {self.tipo}"
 
     class Meta:
         verbose_name = "Alerta"
         verbose_name_plural = "Alertas"
+
+# -----------------------------------
+# MODELS DO SISTEMA DE PONTUAÇÃO
+# -----------------------------------
+
+class Ponto(models.Model):
+    usuarios = models.OneToOneField(usuarios, on_delete=models.CASCADE)
+    pontos = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.usuarios.username} - {self.pontos} pts"
+
+
+class Ranking(models.Model):
+    usuarios = models.OneToOneField(usuarios, on_delete=models.CASCADE)
+    posicao = models.PositiveIntegerField(default=0)
+    pontuacao_total = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ['posicao']  # sempre retorna ordenado
+
+    def __str__(self):
+        return f"{self.posicao}º - {self.usuarios.username} ({self.pontuacao_total} pts)"
+    
+    

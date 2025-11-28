@@ -110,10 +110,13 @@ function gerarRelatorio() {
     mensagem += `• Avaliação da própria evolução: ${evolucao}\n\n`;
 
     // análise automática simples
-    if (tempo > 5) {
+    if (tempo <= 6) {
         mensagem += "⚠ Você está passando muito tempo nas redes sociais. Considere reduzir o uso para evitar impactos na saúde mental e física.\n";
     } else if (tempo <= 2) {
         mensagem += "👍 Ótimo! Seu uso de redes sociais está equilibrado.\n";
+    }
+    if (tempo > 6) {
+        mensagem += "🚫 Você está passando tempo demais nas redes socias!! Diminua imediatamente o uso e procure fazer outras atividades fora da tela.\n";
     }
 
     if (emocional === "Ansioso(a)" || emocional === "Triste") {
