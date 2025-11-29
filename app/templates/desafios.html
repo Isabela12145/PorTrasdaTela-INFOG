@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Desafios Sem Tela</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <!-- Django CSRF token estará disponível via cookie, script pega ele -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 30px;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            max-width: 500px;
+            margin: auto;
+            border-radius: 10px;
+            box-shadow: 0 0 10px #ccc;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        select,
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        .pontos {
+            font-size: 20px;
+            text-align: center;
+            margin-top: 20px;
+            color: green;
+        }
+
+        .historico {
+            margin-top: 20px;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>🎯 Desafios Sem Tela</h1>
+
+        <label>Escolha um desafio realizado:</label>
+        <select id="desafio">
+            <option value="20">📘 Ler um livro com mais de 200 páginas (20 pontos)</option>
+            <option value="10">✍️ Escrever um texto ou diário (10 pontos)</option>
+            <option value="15">🚶 Caminhar por 30 minutos (15 pontos)</option>
+            <option value="25">🏃 Praticar atividade física por 1 hora (25 pontos)</option>
+            <option value="8">🧹 Ajudar nas tarefas domésticas (8 pontos)</option>
+            <option value="12">🎨 Desenhar ou pintar (12 pontos)</option>
+        </select>
+
+        <button id="btnRegistrar">Registrar atividade</button>
+
+        <div class="pontos">
+            Pontuação Total: <span id="pontuacao">{{ usuario.pontos }}</span> pontos
+        </div>
+
+        <div class="historico">
+            <h3>📋 Histórico de atividades:</h3>
+            <ul id="lista"></ul>
+        </div>
+    </div>
+
+    <script>
+        // pega cookie CSRF (padrão Django)
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        const csrftoken = getCookie('csrftoken');
+
+        const btn = document.getElementById('btnRegistrar');
+        const select = document.getElementById('desafio');
+        const pontuacaoEl = document.getElementById('pontuacao');
+        const lista = document.getElementById('lista');
+
+        btn.addEventListener('click', async () => {
+            const pontos = parseInt(select.value, 10);
+            const texto = select.options[select.selectedIndex].text;
+
+            // POST para a view (JSON)
+            try {
+                const resp = await fetch("{% url 'desafios' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrftoken,
+                        "X-Requested-With": "XMLHttpRequest"
+                    },
+                    body: JSON.stringify({ pontos: pontos, texto: texto })
+                });
+
+                if (!resp.ok) {
+                    const text = await resp.text();
+                    alert("Erro ao registrar: " + text);
+                    return;
+                }
+
+                const data = await resp.json();
+                if (data.success) {
+                    // atualiza pontuação mostrada
+                    pontuacaoEl.innerText = data.novo_total;
+
+                    // adiciona ao histórico da página
+                    const li = document.createElement('li');
+                    li.textContent = data.item.texto;
+                    lista.appendChild(li);
+                } else {
+                    alert("Erro: resposta inesperada do servidor.");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Erro de rede ao tentar registrar atividade.");
+            }
+        });
+    </script>
+
+</body>
+
+</html>

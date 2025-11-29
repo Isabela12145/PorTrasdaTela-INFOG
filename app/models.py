@@ -26,6 +26,8 @@ class usuarios(models.Model):
     # Campos caso o tipo do usuário for funcionário
     cpf = models.CharField(max_length=14, unique=True, blank=True, null=True, verbose_name="CPF")
 
+    pontos = models.IntegerField(default=0, verbose_name="Pontos")
+
     def __str__(self):
         return self.nome or self.user.username
 

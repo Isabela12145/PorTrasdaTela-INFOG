@@ -4,13 +4,18 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib import messages
-from .models import Ranking
+from .models import *
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from .models import DesafioOffline, ConquistaDesafio, RegistroTempoTela, RotinaTempoTela
 
 
+# Adicionado para fazer a página "Desafios" funcionar
+from django.http import JsonResponse, HttpResponseBadRequest
+import json
+from django.db import transaction
+from django.db.models import F
 
 # Página inicial
 def index(request):
@@ -82,10 +87,6 @@ def logout_view(request):
     messages.success(request, "Você saiu da sua conta.")
     return redirect('index')
 
-def ranking_view(request):
-    ranking = Ranking.objects.order_by('posicao')
-    return render(request, 'ranking.html', {'ranking': ranking})
-
 
 # --- PÁGINAS INTERNAS (proteção com login_required) ---
 
@@ -101,7 +102,22 @@ def diario(request):
 
 @login_required(login_url="login")
 def ranking(request):
-    return render(request, "ranking.html")
+    # pega os usuários ordenados por pontuação (maior → menor)
+    lista = usuarios.objects.order_by("-pontos")
+
+    ranking = []
+    pos = 1
+
+    for u in lista:
+        ranking.append({
+            "posicao": pos,
+            "usuario": u.user.username,
+            "nome": u.nome or u.user.get_full_name() or u.user.username,
+            "pontos": u.pontos
+        })
+        pos += 1
+
+    return render(request, "ranking.html", {"ranking": ranking})
 
 
 @login_required(login_url="login")
@@ -122,17 +138,52 @@ def conteudoed(request):
 
 # registrar conclusão de desafio
 @login_required
-def concluir_desafio(request, desafio_id):
-    desafio = get_object_or_404(DesafioOffline, id=desafio_id)
-
-    # cria o registro que ativa a pontuação automática
-    ConquistaDesafio.objects.create(
-        usuarios=request.user.usuarios,  # seu modelo relacionado
-        desafio=desafio,
-        data_conclusao=timezone.now().date()
+def desafios_view(request):
+    """
+    GET: renderiza a página de desafios
+    POST: recebe JSON { "pontos": int, "texto": str } e atualiza usuarios.pontos,
+          retorna JSON com a nova pontuação e o item do histórico
+    """
+    # obtém ou cria o objeto 'usuarios' associado ao usuário logado
+    usuario, _ = usuarios.objects.get_or_create(
+        user=request.user,
+        defaults={"nome": request.user.get_full_name() or request.user.username}
     )
 
-    return redirect('ranking')
+    if request.method == "GET":
+        # renderiza template passando a pontuação atual
+        return render(request, "desafios.html", {"usuario": usuario})
+
+    # POST: aceitar JSON ou form-encoded
+    try:
+        if request.content_type == "application/json":
+            payload = json.loads(request.body.decode("utf-8") or "{}")
+            pontos = int(payload.get("pontos", 0))
+            texto = str(payload.get("texto", "")).strip()
+        else:
+            # fallback para form POST
+            pontos = int(request.POST.get("pontos", 0))
+            texto = request.POST.get("texto", "").strip()
+    except (ValueError, TypeError):
+        return HttpResponseBadRequest("Valor de pontos inválido.")
+
+    if pontos <= 0:
+        return HttpResponseBadRequest("Pontos devem ser um valor inteiro maior que zero.")
+
+    # atualiza de forma atômica usando F() para evitar race conditions
+    with transaction.atomic():
+        usuarios.objects.filter(pk=usuario.pk).update(pontos=F("pontos") + pontos)
+        usuario.refresh_from_db()  # garante valor atualizado
+
+    # resposta que o front usará para atualizar UI
+    return JsonResponse({
+        "success": True,
+        "novo_total": usuario.pontos,
+        "item": {
+            "texto": texto or f"{pontos} pontos",
+            "pontos": pontos
+        }
+    })
 
 @login_required
 def registrar_tempo_tela(request):
