@@ -15,7 +15,6 @@ urlpatterns = [
     path('profissionais/', views.profissionais, name="profissionais"),
     path('conteudoed/', views.conteudoed, name="conteudoed"),
     path('ranking/', ranking_view, name='ranking'),
-    path("desafio/<int:desafio_id>/concluir/", views.concluir_desafio, name="concluir_desafio"),
     path("tempo/registrar/", views.registrar_tempo_tela, name="registrar_tempo_tela"),
 
   # <<< ADICIONADO CORRETAMENTE
@@ -24,6 +23,7 @@ urlpatterns = [
     path('login/', login_view, name='login'),      # <<< corrigido
     path('register/', register_view, name='register'),
     path('logout/', logout_view, name='logout'),
+    path('desafio/', views.DesafioOffline, name='desafio'),
 
 
 
