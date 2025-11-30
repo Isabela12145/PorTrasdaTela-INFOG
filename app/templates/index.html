@@ -93,15 +93,43 @@
     </nav>
 
     <!-- Botões para entrar no sistema -->
-    <section class="container text-center mt-5">
-      <h2 class="mb-4">Acesse o Sistema</h2>
-      <div class="d-flex flex-wrap justify-content-center gap-3">
-        <a href="/diario/" class="btn btn-outline-primary px-4 py-2">Diário Emocional</a>
-        <a href="/conteudoed/" class="btn btn-outline-primary px-4 py-2">Conteúdo Educativo</a>
-        <a href="/ranking/" class="btn btn-outline-primary px-4 py-2">Ranking</a>
-        <a href="{% url 'desafios' %}" class="btn btn-outline-primary px-4 py-2">Desafios</a>
-      </div>
-    </section>
+    <!-- Botões para entrar no sistema -->
+<section class="container text-center mt-5">
+  <h2 class="mb-4">Acesse o Sistema</h2>
+
+  <div class="d-flex flex-wrap justify-content-center gap-3">
+
+    <!-- Diário -->
+    <a href="/diario/" class="btn btn-outline-primary px-4 py-2">Diário Emocional</a>
+
+    <!-- Conteúdo Educativo -->
+    <a href="/conteudoed/" class="btn btn-outline-primary px-4 py-2">Conteúdo Educativo</a>
+
+    <!-- Ranking -->
+    <a href="/ranking/" class="btn btn-outline-primary px-4 py-2">Ranking</a>
+
+    <!-- Desafios -->
+    <a href="{% url 'desafios' %}" class="btn btn-outline-primary px-4 py-2">Desafios</a>
+
+    <!-- Recompensas -->
+    <a href="/recompensa/" class="btn btn-outline-primary px-4 py-2">Recompensas</a>
+
+    <!-- Profissionais -->
+    <a href="/profissionais/" class="btn btn-outline-primary px-4 py-2">Profissionais</a>
+
+    <!-- Registro Tempo de Tela -->
+    <a href="/registro_tela/" class="btn btn-outline-primary px-4 py-2">Tempo de Tela</a>
+
+    <!-- Alertas -->
+    <a href="/alerta/" class="btn btn-outline-primary px-4 py-2">Alertas</a>
+
+    <!-- Usuários (Opcional — apenas para admins) -->
+    {% if user.is_staff %}
+    <a href="/usuarios/" class="btn btn-outline-primary px-4 py-2">Usuários</a>
+    {% endif %}
+  </div>
+</section>
+
 
     <!-- Hero -->
     <section class="hero">

@@ -3,10 +3,6 @@ from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 
 
-
-
-
-
 # Usuário
 from django.core.validators import RegexValidator
 
@@ -28,32 +24,19 @@ class usuarios(models.Model):
 
     pontos = models.IntegerField(default=0, verbose_name="Pontos")
 
-    def __str__(self):
+    def __str__(self):  # CORRIGIDO: dois underscores
         return self.nome or self.user.username
 
     class Meta:
         verbose_name = "Pessoa"
         verbose_name_plural = "Pessoas"
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 class RegistroTempoTela(models.Model):
     usuarios = models.ForeignKey(usuarios, on_delete=models.CASCADE, verbose_name="Usuario")
     data = models.DateField(verbose_name="Data do registro")
     minutos_uso = models.IntegerField(verbose_name="Minutos de uso")
 
-    def __str__(self):
+    def __str__(self):  # CORRIGIDO: dois underscores
         return f"{self.usuarios.nome} - {self.data}"
 
     class Meta:
@@ -67,7 +50,7 @@ class DesafioOffline(models.Model):
     nivel_dificuldade = models.CharField(max_length=50, verbose_name="Nível de dificuldade")
     pontos_recompensa = models.IntegerField(verbose_name="Pontos de recompensa")
 
-    def __str__(self):
+    def __str__(self):  # CORRIGIDO: dois underscores
         return self.titulo
 
     class Meta:
@@ -80,7 +63,7 @@ class Recompensa(models.Model):
     descricao = models.TextField(verbose_name="Descrição")
     pontos_necessarios = models.IntegerField(verbose_name="Pontos necessários para desbloquear")
 
-    def __str__(self):
+    def __str__(self):  # CORRIGIDO: dois underscores
         return self.nome
 
     class Meta:
@@ -93,8 +76,8 @@ class ConquistaDesafio(models.Model):
     desafio = models.ForeignKey(DesafioOffline, on_delete=models.CASCADE, verbose_name="Desafio")
     data_conclusao = models.DateField(verbose_name="Data da conclusão")
 
-    def __str__(self):
-        return f"{self.usuario.nome} - {self.desafio.titulo}"
+    def __str__(self):  # CORRIGIDO: dois underscores
+        return f"{self.usuarios.nome} - {self.desafio.titulo}"  # CORRIGIDO: self.usuarios (não self.usuario)
 
     class Meta:
         verbose_name = "Conquista de Desafio"
@@ -143,7 +126,7 @@ class ConteudoEducativo(models.Model):
 
         super().save(*args, **kwargs)
 
-    def __str__(self):
+    def __str__(self):  # CORRIGIDO: dois underscores
         return self.titulo
 
 
@@ -152,7 +135,7 @@ class RotinaTempoTela(models.Model):
     limite_diario_minutos = models.IntegerField(verbose_name="Limite diário (minutos)")
     atividades_offline_planejadas = models.TextField(verbose_name="Atividades offline planejadas")
 
-    def __str__(self):
+    def __str__(self):  # CORRIGIDO: dois underscores
         return f"Rotina de {self.usuarios.nome}"
 
     class Meta:
@@ -166,7 +149,7 @@ class Notificacao(models.Model):
     data_envio = models.DateTimeField(auto_now_add=True, verbose_name="Data de envio")
     lida = models.BooleanField(default=False, verbose_name="Lida")
 
-    def __str__(self):
+    def __str__(self):  # CORRIGIDO: dois underscores
         return f"Notificação para {self.usuario.nome}"
 
     class Meta:
@@ -179,39 +162,12 @@ class Feedback(models.Model):
     mensagem = models.TextField(verbose_name="Mensagem")
     data_envio = models.DateTimeField(auto_now_add=True, verbose_name="Data de envio")
 
-    def __str__(self):
+    def __str__(self):  # CORRIGIDO: dois underscores
         return f"Feedback de {self.usuario.nome}"
 
     class Meta:
         verbose_name = "Feedback"
         verbose_name_plural = "Feedbacks"
-
-
-class Ponto(models.Model):
-    usuarios = models.ForeignKey(usuarios, on_delete=models.CASCADE, verbose_name="Usuario")
-    pontos = models.IntegerField(default=0, verbose_name="Pontos acumulados")
-    data_atualizacao = models.DateTimeField(auto_now=True, verbose_name="Data de atualização")
-
-    def __str__(self):
-        return f"Pontos de {self.usuarios.nome}: {self.pontos}"
-
-    class Meta:
-        verbose_name = "Ponto"
-        verbose_name_plural = "Pontos"
-
-
-class Ranking(models.Model):
-    usuarios = models.ForeignKey(usuarios, on_delete=models.CASCADE, verbose_name="Criança")
-    posicao = models.IntegerField(verbose_name="Posição no ranking")
-    pontuacao_total = models.IntegerField(verbose_name="Pontuação total")
-    data_atualizacao = models.DateTimeField(auto_now=True, verbose_name="Data de atualização")
-
-    def __str__(self):
-        return f"{self.usuarios.nome} - Posição {self.posicao}"
-
-    class Meta:
-        verbose_name = "Ranking"
-        verbose_name_plural = "Rankings"
 
 
 class Diario(models.Model):
@@ -221,7 +177,7 @@ class Diario(models.Model):
     tempo_tela_utilizado = models.IntegerField(verbose_name="Tempo de tela utilizado (minutos)")
     reflexao = models.TextField(blank=True, verbose_name="Reflexão do dia")
 
-    def __str__(self):
+    def __str__(self):  # CORRIGIDO: dois underscores
         return f"Diário de {self.usuarios.nome} - {self.data}"
 
     class Meta:
@@ -242,7 +198,7 @@ class Alerta(models.Model):
     data_criacao = models.DateTimeField(auto_now_add=True, verbose_name="Data de criação")
     lido = models.BooleanField(default=False, verbose_name="Lido")
 
-    def __str__(self):
+    def __str__(self):  # CORRIGIDO: dois underscores
         return f"Alerta para {self.usuarios.nome} - {self.tipo}"
 
     class Meta:
@@ -257,9 +213,8 @@ class Ponto(models.Model):
     usuarios = models.OneToOneField(usuarios, on_delete=models.CASCADE)
     pontos = models.IntegerField(default=0)
 
-    def __str__(self):
-        return f"{self.usuarios.username} - {self.pontos} pts"
-
+    def __str__(self):  # CORRIGIDO: dois underscores
+        return f"{self.usuarios.nome} - {self.pontos} pts"  # CORRIGIDO: self.usuarios.nome
 
 class Ranking(models.Model):
     usuarios = models.OneToOneField(usuarios, on_delete=models.CASCADE)
@@ -269,7 +224,13 @@ class Ranking(models.Model):
     class Meta:
         ordering = ['posicao']  # sempre retorna ordenado
 
+    def __str__(self):  # CORRIGIDO: dois underscores
+        return f"{self.posicao}º - {self.usuarios.nome} ({self.pontuacao_total} pts)"  # CORRIGIDO: self.usuarios.nome
+    
+class Profissional(models.Model):
+    nome = models.CharField(max_length=200)
+    especialidade = models.CharField(max_length=200)
+    foto = models.ImageField(upload_to="profissionais")
+
     def __str__(self):
-        return f"{self.posicao}º - {self.usuarios.username} ({self.pontuacao_total} pts)"
-    
-    
+        return self.nome

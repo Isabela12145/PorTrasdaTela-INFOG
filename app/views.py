@@ -127,7 +127,9 @@ def recompensa(request):
 
 @login_required(login_url="login")
 def profissionais(request):
-    return render(request, "profissionais.html")
+    lista = profissionais.objects.all()
+    return render(request, "profissionais.html", {"profissionais": lista})
+
 
 from .models import ConteudoEducativo
 
@@ -135,6 +137,9 @@ from .models import ConteudoEducativo
 def conteudoed(request):
     conteudos = ConteudoEducativo.objects.all()
     return render(request, "conteudoed.html", {"conteudos": conteudos})
+def conteudo_adicionar(request):
+    return render(request, "conteudo_adicionar.html")
+
 
 # registrar conclusão de desafio
 @login_required
