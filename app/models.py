@@ -84,6 +84,85 @@ class ConquistaDesafio(models.Model):
         verbose_name_plural = "Conquistas de Desafios"
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import hashlib
+import urllib.parse
+from urllib.parse import urlparse, parse_qs
+
+from django.db import models
+from django.utils.text import Truncator
+from django.utils.safestring import mark_safe
+
+
+class Profissional(models.Model):
+    nome = models.CharField("Nome", max_length=200)
+    especialidade = models.CharField("Especialidade / Área", max_length=200, blank=True)
+    descricao = models.TextField("Descrição", blank=True)
+    foto_url = models.URLField(
+        "URL da Foto",
+        max_length=500,
+        blank=True,
+        help_text="Coloque uma URL pública (http(s)) apontando para a imagem do profissional"
+    )
+
+    def __str__(self):
+        return self.nome or ""
+
+    def _initials(self):
+        if not self.nome:
+            return "?"
+        parts = [p for p in self.nome.strip().split() if p]
+        if not parts:
+            return "?"
+        if len(parts) == 1:
+            return (parts[0][0] if parts[0] else "?").upper()
+        return (parts[0][0] + parts[-1][0]).upper()
+
+    def _bg_color_from_name(self):
+        if not self.nome:
+            return "#999999"
+        h = hashlib.md5(self.nome.encode("utf-8")).hexdigest()
+        return f"#{h[:6]}"
+
+    @property
+    def avatar_src(self):
+        """
+        Retorna a URL da foto (se existir) ou um data:image/svg+xml;utf8,... com as iniciais.
+        Se retornar data-url (svg), marcamos como safe para evitar escape que quebre a url.
+        """
+        if self.foto_url:
+            return self.foto_url
+
+        initials = self._initials()
+        bg = self._bg_color_from_name()
+        text_color = "#ffffff"
+        size = 200
+
+        svg = (
+            f"<svg xmlns='http://www.w3.org/2000/svg' width='{size}' height='{size}' viewBox='0 0 {size} {size}'>"
+            f"<rect width='100%' height='100%' fill='{bg}'/>"
+            f"<text x='50%' y='50%' font-family='Poppins, Arial, sans-serif' "
+            f"font-size='{int(size*0.42)}' fill='{text_color}' dominant-baseline='middle' text-anchor='middle'>{initials}</text>"
+            f"</svg>"
+        )
+        data_url = "data:image/svg+xml;utf8," + urllib.parse.quote(svg)
+        return mark_safe(data_url)
+
+
 class ConteudoEducativo(models.Model):
     TIPOS = [
         ('texto', 'Texto'),
@@ -96,25 +175,32 @@ class ConteudoEducativo(models.Model):
     arquivo_url = models.URLField(verbose_name="URL do conteúdo")
     descricao = models.TextField(verbose_name="Descrição")
 
+    profissionalAutor = models.ForeignKey(
+        Profissional,
+        on_delete=models.CASCADE,
+        related_name='conteudos',
+        verbose_name='Autor (Profissional)'
+    )
+
     def save(self, *args, **kwargs):
         # Se for vídeo do YouTube, extrai o ID e remove parâmetros
-        if self.tipo == "video":
+        if self.tipo == "video" and self.arquivo_url:
             url = self.arquivo_url.strip()
 
-            # 1. watch?v=
-            if "watch?v=" in url:
-                video_id = url.split("watch?v=")[-1]
-
-            # 2. youtu.be/
-            elif "youtu.be/" in url:
-                video_id = url.split("youtu.be/")[-1]
-
-            # 3. shorts/
-            elif "shorts/" in url:
-                video_id = url.split("shorts/")[-1]
-
+            # se já recebeu apenas um id, mantemos
+            if ("youtube" not in url and "youtu.be" not in url and '/' not in url) and len(url) <= 50:
+                video_id = url
             else:
-                video_id = url  # fallback
+                if "watch?v=" in url:
+                    video_id = url.split("watch?v=")[-1]
+                elif "youtu.be/" in url:
+                    video_id = url.split("youtu.be/")[-1]
+                elif "shorts/" in url:
+                    video_id = url.split("shorts/")[-1]
+                else:
+                    parsed = urlparse(url)
+                    qs = parse_qs(parsed.query)
+                    video_id = qs.get('v', [url])[-1]
 
             # Remove parâmetros como '?si=' ou '&ab_channel='
             if "?" in video_id:
@@ -126,8 +212,85 @@ class ConteudoEducativo(models.Model):
 
         super().save(*args, **kwargs)
 
-    def __str__(self):  # CORRIGIDO: dois underscores
-        return self.titulo
+    def __str__(self):
+        return self.titulo or ""
+
+    # excerpt como property sem parâmetros (uso direto no template: {{ c.excerpt }})
+    @property
+    def excerpt(self):
+        return Truncator(self.descricao or "").chars(120)
+
+    def _extract_video_id(self, value):
+        """Extrai o video id de um valor que pode ser um id puro ou uma URL do YouTube."""
+        if not value:
+            return None
+        v = value.strip()
+
+        # já é apenas um id curto (sem '/' ou 'youtu' e razoável em comprimento)
+        if ("youtube" not in v and "youtu.be" not in v and '/' not in v) and len(v) <= 50:
+            return v
+
+        # vários formatos possíveis
+        if "watch?v=" in v:
+            vid = v.split("watch?v=")[-1]
+        elif "youtu.be/" in v:
+            vid = v.split("youtu.be/")[-1]
+        elif "shorts/" in v:
+            vid = v.split("shorts/")[-1]
+        else:
+            parsed = urlparse(v)
+            qs = parse_qs(parsed.query)
+            vid = qs.get('v', [v])[-1]
+
+        # remove quaisquer parâmetros residuais
+        if "?" in vid:
+            vid = vid.split("?")[0]
+        if "&" in vid:
+            vid = vid.split("&")[0]
+
+        return vid or None
+
+    @property
+    def video_id(self):
+        """Retorna o id do vídeo caso tipo == 'video' — funciona tanto se arquivo_url for id ou URL."""
+        if self.tipo != 'video' or not self.arquivo_url:
+            return None
+        return self._extract_video_id(self.arquivo_url)
+
+    @property
+    def youtube_watch_url(self):
+        """URL do YouTube (watch) — usa o id extraído quando disponível, senão retorna arquivo_url."""
+        vid = self.video_id
+        if vid:
+            return f"https://www.youtube.com/watch?v={vid}"
+        return self.arquivo_url or None
+
+    @property
+    def youtube_embed_url(self):
+        """URL para usar no iframe embed — retorna None se não houver id."""
+        vid = self.video_id
+        return f"https://www.youtube.com/embed/{vid}" if vid else None
+
+    @property
+    def youtube_thumbnail(self):
+        """Thumbnail do YouTube (preview)."""
+        vid = self.video_id
+        return f"https://img.youtube.com/vi/{vid}/hqdefault.jpg" if vid else None
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 class RotinaTempoTela(models.Model):
@@ -226,11 +389,5 @@ class Ranking(models.Model):
 
     def __str__(self):  # CORRIGIDO: dois underscores
         return f"{self.posicao}º - {self.usuarios.nome} ({self.pontuacao_total} pts)"  # CORRIGIDO: self.usuarios.nome
-    
-class Profissional(models.Model):
-    nome = models.CharField(max_length=200)
-    especialidade = models.CharField(max_length=200)
-    foto = models.ImageField(upload_to="profissionais")
 
-    def __str__(self):
-        return self.nome
+

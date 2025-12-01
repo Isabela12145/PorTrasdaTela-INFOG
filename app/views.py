@@ -125,10 +125,43 @@ def recompensa(request):
     return render(request, "recompensa.html")
 
 
+
+
+
+
+
+
+
+
+
+
+
+from django.core.paginator import Paginator
 @login_required(login_url="login")
-def profissionais(request):
-    lista = profissionais.objects.all()
-    return render(request, "profissionais.html", {"profissionais": lista})
+def lista_profissionais(request):
+    profissionais_qs = Profissional.objects.all().order_by('nome')
+    per_page = 9  # ajuste para quantos mostrar por página
+    paginator = Paginator(profissionais_qs, per_page)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'profissionais.html', {
+        'profissionais': page_obj,   # Page é iterável — conveniente para o template
+        'page_obj': page_obj,
+        'paginator': paginator,
+        'is_paginated': page_obj.has_other_pages(),
+    })
+
+
+
+
+
+
+
+
+
+
+
 
 
 from .models import ConteudoEducativo
@@ -204,4 +237,7 @@ def registrar_tempo_tela(request):
         return redirect("ranking")
 
     return render(request, "registro_tempo.html")
+
+
+
 

@@ -12,7 +12,9 @@ urlpatterns = [
     path('diario/', views.diario, name="diario"),
     path('ranking/', views.ranking, name="ranking"),
     path('recompensa/', views.recompensa, name="recompensa"),
-    path("profissionais/", views.profissionais, name="profissionais"),
+    
+    path('profissionais/', views.lista_profissionais, name='profissionais'),
+
     path('conteudoed/', views.conteudoed, name="conteudoed"),
     path("desafios/", views.desafios_view, name="desafios"),
     path("tempo/registrar/", views.registrar_tempo_tela, name="registrar_tempo_tela"),
@@ -26,4 +28,6 @@ urlpatterns = [
 
     # Login pages (se tiver separado)
     path('login-page/', views.login_page, name='login_page'),
+    
+    
 ]

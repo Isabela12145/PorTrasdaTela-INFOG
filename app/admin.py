@@ -22,13 +22,26 @@ admin.site.register(RegistroTempoTela)
 admin.site.register(DesafioOffline)
 admin.site.register(Recompensa)
 admin.site.register(ConquistaDesafio)
-admin.site.register(ConteudoEducativo)
 admin.site.register(RotinaTempoTela)
 admin.site.register(Notificacao)
 admin.site.register(Feedback)
 admin.site.register(Diario)
 
 # Modelos com configurações personalizadas
+
+
+
+from django.contrib import admin
+from .models import ConteudoEducativo
+
+@admin.register(ConteudoEducativo)
+class ConteudoEducativoAdmin(admin.ModelAdmin):
+    list_display = ('titulo', 'tipo', 'profissionalAutor')
+    search_fields = ('titulo', 'descricao', 'profissionalAutor__nome')
+    list_filter = ('tipo',)
+
+
+
 
 @admin.register(Ponto)
 class PontoAdmin(admin.ModelAdmin):
