@@ -11,7 +11,13 @@ urlpatterns = [
     path('alerta/', views.alerta, name="alerta"),
     path('diario/', views.diario, name="diario"),
     path('ranking/', views.ranking, name="ranking"),
-    path('recompensa/', views.recompensa, name="recompensa"),
+    
+    
+    path('recompensas/', views.recompensa, name='recompensa'),
+    path('recompensas/resgatar/<int:recompensa_id>/', views.resgatar_recompensa, name='resgatar_recompensa'),
+    
+    
+    path('usuarios/', views.usuarios, name="usuarios"),
     
     path('profissionais/', views.lista_profissionais, name='profissionais'),
 

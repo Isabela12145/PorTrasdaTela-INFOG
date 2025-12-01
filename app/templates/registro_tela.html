@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Registrar Tempo de Tela</title>
+</head>
+
+<body>
+<h2>Registrar Tempo de Tela</h2>
+
+<form method="POST">
+    {% csrf_token %}
+    <label>Minutos utilizados hoje:</label>
+    <input type="number" name="minutos" required>
+    <button type="submit">Registrar</button>
+</form>
+
+</body>
+</html>

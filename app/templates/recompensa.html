@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recompensas - Por Trás da Tela</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            font-family: "Poppins", sans-serif;
+            background: #f2f4f8;
+            color: #333;
+        }
+
+        .navbar-brand {
+            font-weight: 600;
+        }
+
+        .reward-card {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+        .reward-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+        }
+        .reward-available {
+            border: 3px solid #28a745;
+        }
+        .reward-locked {
+            border: 3px solid #6c757d;
+            opacity: 0.9;
+        }
+        .reward-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto 1rem;
+        }
+        .reward-time { background-color: #e6f3ff; color: #0d6efd; }
+        .reward-game { background-color: #fff0e6; color: #fd7e14; }
+        .reward-treat { background-color: #f0ffe6; color: #198754; }
+        .reward-activity { background-color: #f0e6ff; color: #6f42c1; }
+        .progress { height: 10px; border-radius: 5px; }
+        .points-badge { font-size: 1.1rem; padding: 0.5rem 1rem; }
+        .category-btn.active {
+            background-color: #6a5af9 !important;
+            color: white !important;
+            border-color: #6a5af9 !important;
+        }
+        .ribbon {
+            position: absolute;
+            top: 10px;
+            right: -30px;
+            background: #ff6b6b;
+            color: white;
+            padding: 5px 40px;
+            transform: rotate(45deg);
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+        .progress-percentage {
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+        }
+        .btn-outline-primary {
+            border-color: #6a5af9;
+            color: #6a5af9;
+        }
+        .btn-outline-primary:hover {
+            background-color: #6a5af9;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(120deg, #6a5af9, #8c79ff);">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'index' %}">
+                <i class="bi bi-phone"></i> Por Trás da Tela
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'index' %}">Início</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'diario' %}">Diário</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'desafios' %}">Desafios</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'alerta' %}">Alertas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'ranking' %}">Ranking</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'recompensa' %}">Recompensas</a>
+                    </li>
+                </ul>
+                <div class="navbar-nav">
+                    <span class="nav-link">
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <strong id="userPoints">{{ pontos_usuario|default:0 }}</strong> pontos
+                    </span>
+                    <a class="nav-link" href="{% url 'logout' %}">
+                        <i class="bi bi-box-arrow-right"></i> Sair
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="h3" style="color: #6a5af9;">
+                    <i class="bi bi-gift-fill text-warning"></i> Recompensas
+                </h1>
+                <p class="text-muted">Resgate seus pontos por recompensas especiais!</p>
+            </div>
+            <div class="col-auto">
+                <div class="card bg-light">
+                    <div class="card-body py-2">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-trophy-fill text-warning me-2"></i>
+                            <div>
+                                <strong id="currentPoints">{{ pontos_usuario|default:0 }}</strong> pontos
+                                <div class="progress mt-1" style="width: 160px;">
+                                    <div class="progress-bar bg-warning" style="width: {{ geral_percent|default:0 }}%"></div>
+                                </div>
+                                <small class="text-muted progress-percentage">
+                                    {{ pontos_usuario|default:0 }}/{{ geral_meta|default:1000 }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Categories -->
+        <div class="row mb-4">
+            <div class="col">
+                <div class="btn-group flex-wrap" role="group">
+                    <button type="button" class="btn btn-outline-primary category-btn active" data-category="all">
+                        Todas
+                    </button>
+                    <button type="button" class="btn btn-outline-primary category-btn" data-category="available">
+                        Disponível
+                    </button>
+                    <button type="button" class="btn btn-outline-primary category-btn" data-category="locked">
+                        Bloqueadas
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rewards Grid -->
+        <div class="row" id="rewardsGrid">
+            {% for item in recompensas_com_status %}
+            <div class="col-md-6 col-lg-4 mb-3" data-category="{% if item.disponivel %}available{% else %}locked{% endif %}">
+                <div class="card reward-card {% if item.disponivel %}reward-available{% else %}reward-locked{% endif %} h-100 position-relative">
+                    {% if forloop.first %}
+                    <div class="ribbon">POPULAR</div>
+                    {% endif %}
+
+                    <div class="card-body text-center">
+                        <div class="reward-icon
+                            {% if 'tempo' in item.recompensa.nome.lower %}reward-time
+                            {% elif 'jogo' in item.recompensa.nome.lower %}reward-game
+                            {% elif 'atividade' in item.recompensa.nome.lower %}reward-activity
+                            {% else %}reward-treat{% endif %}">
+                            <i class="bi
+                                {% if 'tempo' in item.recompensa.nome.lower %}bi-clock-fill
+                                {% elif 'jogo' in item.recompensa.nome.lower %}bi-joystick
+                                {% elif 'atividade' in item.recompensa.nome.lower %}bi-bicycle
+                                {% else %}bi-gift-fill{% endif %}"></i>
+                        </div>
+
+                        <h5 class="card-title">{{ item.recompensa.nome }}</h5>
+                        <p class="card-text text-muted">{{ item.recompensa.descricao }}</p>
+
+                        <div class="mb-3">
+                            <span class="badge {% if item.disponivel %}bg-warning{% else %}bg-secondary{% endif %} points-badge">
+                                <i class="bi bi-star-fill"></i> {{ item.recompensa.pontos_necessarios }} pontos
+                            </span>
+                        </div>
+
+                        {% if item.ja_resgatada %}
+                            <button class="btn btn-outline-primary btn-sm" disabled>
+                                <i class="bi bi-check2-circle"></i> Resgatada
+                            </button>
+                        {% elif item.disponivel %}
+                            <button class="btn btn-success btn-sm" onclick="redeemReward({{ item.recompensa.id }}, {{ item.recompensa.pontos_necessarios }})">
+                                <i class="bi bi-gift"></i> Resgatar
+                            </button>
+                        {% else %}
+                            <button class="btn btn-secondary btn-sm" disabled>
+                                <i class="bi bi-lock"></i> Pontos Insuficientes
+                            </button>
+                            <div class="mt-2">
+                                <small class="text-muted">Faltam {{ item.pontos_faltando }} pontos</small>
+                                <div class="progress mt-1">
+                                    <div class="progress-bar bg-warning" style="width: {{ item.progress_percent|default:0 }}%"></div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5" id="emptyState">
+                <i class="bi bi-gift display-1 text-muted"></i>
+                <h3 class="text-muted mt-3">Nenhuma recompensa disponível</h3>
+                <p class="text-muted">Novas recompensas serão adicionadas em breve!</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Minhas Conquistas -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card" style="background: linear-gradient(120deg, #6a5af9, #8c79ff); color: white;">
+                    <div class="card-body text-center">
+                        <h4 class="h5 mb-3">
+                            <i class="bi bi-trophy-fill"></i> Minhas Conquistas
+                        </h4>
+                        <p class="mb-2">
+                            {% if pontos_usuario|default:0 > 0 %}
+                                Você tem <strong id="minhasPontos">{{ pontos_usuario|default:0 }}</strong> pontos.
+                                Continue completando desafios para ganhar mais pontos e desbloquear recompensas!
+                            {% else %}
+                                Complete desafios para ganhar pontos e desbloquear recompensas especiais!
+                            {% endif %}
+                        </p>
+
+                        <div>
+                            {% if recompensas_resgatadas %}
+                                {% for r in recompensas_resgatadas %}
+                                    <span class="badge bg-light text-dark mx-1 my-1">
+                                        <i class="bi bi-check2-circle"></i> {{ r.nome }}
+                                    </span>
+                                {% endfor %}
+                            {% else %}
+                                <small class="text-light-50">Nenhuma conquista ainda.</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Pontos do usuário (vindo do Django)
+        let userPoints = {{ pontos_usuario|default:0 }};
+
+        // Filtros por categoria
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                const category = this.getAttribute('data-category');
+                filterRewards(category);
+            });
+        });
+
+        function filterRewards(category) {
+            const rewards = document.querySelectorAll('#rewardsGrid [data-category]');
+            let visibleCount = 0;
+
+            rewards.forEach(reward => {
+                const rewardCategory = reward.getAttribute('data-category');
+                const shouldShow = (category === 'all') || (rewardCategory === category);
+                reward.style.display = shouldShow ? 'block' : 'none';
+                if (shouldShow) visibleCount++;
+            });
+
+            const emptyState = document.getElementById('emptyState');
+            if (emptyState) {
+                if (visibleCount === 0) emptyState.style.display = 'block';
+                else emptyState.style.display = 'none';
+            }
+        }
+
+        function redeemReward(rewardId, cost) {
+            if (userPoints >= cost) {
+                if (confirm(`Deseja resgatar esta recompensa por ${cost} pontos?`)) {
+                    // montar URL usando a URL Django com placeholder 0
+                    const urlTemplate = "{% url 'resgatar_recompensa' 0 %}";
+                    const url = urlTemplate.replace('0', String(rewardId));
+
+                    fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken'),
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({})
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showAlert('Recompensa resgatada com sucesso!', 'success');
+                            userPoints = data.novos_pontos;
+                            updatePointsDisplay();
+                            // atualizar visual (recarrega a página para manter consistência)
+                            setTimeout(() => { location.reload(); }, 900);
+                        } else {
+                            showAlert(data.error || 'Erro ao resgatar recompensa', 'danger');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showAlert('Erro ao resgatar recompensa', 'danger');
+                    });
+                }
+            } else {
+                showAlert('Pontos insuficientes para resgatar esta recompensa!', 'danger');
+            }
+        }
+
+        function updatePointsDisplay() {
+            const up = document.getElementById('userPoints');
+            const cp = document.getElementById('currentPoints');
+            const mp = document.getElementById('minhasPontos');
+            if (up) up.textContent = userPoints;
+            if (cp) cp.textContent = userPoints;
+            if (mp) mp.textContent = userPoints;
+        }
+
+        function showAlert(message, type) {
+            document.querySelectorAll('.alert').forEach(a => a.remove());
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            const container = document.querySelector('.container');
+            if (container) container.insertBefore(alertDiv, container.firstChild);
+            setTimeout(() => { if (alertDiv.parentNode) alertDiv.remove(); }, 5000);
+        }
+
+        // Função para pegar o token CSRF
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            filterRewards('all');
+        });
+    </script>
+</body>
+</html>
