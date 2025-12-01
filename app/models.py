@@ -2,16 +2,11 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 
-
-
-
-
-
-
 class Recompensa(models.Model):
     nome = models.CharField(max_length=100, verbose_name="Nome da recompensa")
     descricao = models.TextField(verbose_name="Descrição")
     pontos_necessarios = models.IntegerField(verbose_name="Pontos necessários para desbloquear")
+    
 
     def __str__(self):  # CORRIGIDO: dois underscores
         return self.nome
@@ -77,11 +72,6 @@ class DesafioOffline(models.Model):
     class Meta:
         verbose_name = "Desafio Offline"
         verbose_name_plural = "Desafios Offline"
-        
-        
-        
-
-
 
 class ConquistaDesafio(models.Model):
     usuarios = models.ForeignKey(usuarios, on_delete=models.CASCADE, verbose_name="Usuario")
@@ -272,22 +262,6 @@ class ConteudoEducativo(models.Model):
         """Thumbnail do YouTube (preview)."""
         vid = self.video_id
         return f"https://img.youtube.com/vi/{vid}/hqdefault.jpg" if vid else None
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 class RotinaTempoTela(models.Model):
     usuarios = models.ForeignKey(usuarios, on_delete=models.CASCADE, verbose_name="Usuario")
